@@ -1,17 +1,53 @@
 {
   "name": "hyros-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Hyros advertising attribution API",
+  "description": "MCP server for Hyros advertising attribution API — 38 tools for leads, sales, calls, subscriptions, attribution reports, and smart analytics",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
     "hyros-mcp": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "prepublishOnly": "npm run build",
     "test": "tsx --test tests/*.test.ts"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "hyros",
+    "attribution",
+    "analytics",
+    "marketing",
+    "advertising",
+    "roas",
+    "claude",
+    "ai"
+  ],
+  "author": {
+    "name": "Carlos Aragon",
+    "email": "info@carlosaragon.online",
+    "url": "https://carlosaragon.online/"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CachoMX/Hyros-MCP.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CachoMX/Hyros-MCP/issues"
+  },
+  "homepage": "https://github.com/CachoMX/Hyros-MCP#readme",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0"

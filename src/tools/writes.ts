@@ -1,10 +1,15 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { HyrosClient } from '../client.js';
+import type { CartItem } from '../types.js';
+import { requireString, requireNumber, requireArray, requireStringArray, optString, optNumber, optBoolean, optArray, optStringArray, requireEmailOrPhone } from '../validation.js';
 
 export const writeTools: Tool[] = [
   {
     name: 'hyros_create_lead',
-    description: 'Create a new lead in Hyros. If the email already exists, the lead will be updated with any new information provided.',
+    description: 'Create a new lead in Hyros. At least one of email or phoneNumbers must be provided. If the email already exists, the lead will be updated with any new information provided.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -46,11 +51,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_update_lead',
-    description: 'Update an existing lead in Hyros. Can update email, name, tags, IPs, phone numbers, and funnel stage.',
+    description: 'Update an existing lead in Hyros. At least one search parameter (searchEmail, searchId, or searchPhone) must be provided. Can update email, name, tags, IPs, phone numbers, and funnel stage.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -108,11 +118,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_order',
     description: 'Register a new sale/order in Hyros. This creates a sale record attributed to a lead.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -142,6 +156,7 @@ export const writeTools: Tool[] = [
               categoryName: { type: 'string', description: 'Product category name' },
             },
             required: ['name', 'price'],
+            additionalProperties: false,
           },
         },
         orderId: {
@@ -174,11 +189,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['items'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_refund_order',
     description: 'Process a refund for an existing order in Hyros.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -192,11 +212,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['orderId'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_update_sale',
     description: 'Update one or more sale records in Hyros. Can mark sales as recurring, refunded, or update refund amounts.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -222,11 +247,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['ids'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_delete_sale',
     description: 'Permanently delete a sale record from Hyros. This action cannot be undone.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -236,11 +266,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['saleId'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_call',
     description: 'Register a call event in Hyros. Used to track sales calls and attribute them to ad sources.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -293,11 +327,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['name'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_update_call',
     description: 'Update the qualification status or state of existing call records.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -324,11 +363,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['name'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_delete_call',
     description: 'Permanently delete a call record from Hyros.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -338,11 +382,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['callId'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_subscription',
     description: 'Register a new subscription in Hyros for recurring revenue tracking.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -407,11 +455,16 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['status', 'startDate', 'price', 'periodicity'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_update_subscription',
     description: 'Update existing subscription records. Can change status, price, dates, and cancellation.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -450,11 +503,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['ids', 'price'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_source',
     description: 'Create a new ad source/traffic source in Hyros for tracking custom marketing channels.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -506,11 +563,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['name'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_custom_cost',
     description: 'Add a custom ad cost in Hyros. Use this to track offline ad spend, influencer payments, or any cost not automatically tracked by Hyros integrations.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -542,11 +603,15 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['startDate', 'frequency', 'cost', 'tags'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_create_product',
     description: 'Create a new product in Hyros for sale attribution.',
+    annotations: {
+      readOnlyHint: false,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -568,168 +633,341 @@ export const writeTools: Tool[] = [
         },
       },
       required: ['name', 'price'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_create_cart',
+    description: 'Create a new cart in Hyros to track a shopping cart before it converts to an order. Use this when a lead adds items to a cart so Hyros can attribute the eventual purchase.',
+    annotations: {
+      readOnlyHint: false,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          description: 'Cart items (required)',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Product name' },
+              price: { type: 'number', description: 'Price per unit' },
+              quantity: { type: 'number', description: 'Quantity' },
+              externalId: { type: 'string', description: 'External product ID' },
+              sku: { type: 'string', description: 'Product SKU' },
+            },
+            required: ['name', 'price'],
+            additionalProperties: false,
+          },
+        },
+        cartId: { type: 'string', description: 'External cart ID' },
+        email: { type: 'string', description: 'Customer email' },
+        firstName: { type: 'string' },
+        lastName: { type: 'string' },
+        leadIps: { type: 'array', items: { type: 'string' }, description: 'Lead IP addresses' },
+        phoneNumbers: { type: 'array', items: { type: 'string' } },
+        date: { type: 'string', description: 'Cart date in ISO 8601 format' },
+        currency: { type: 'string', description: 'Currency code (e.g., USD)' },
+      },
+      required: ['items'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_update_cart',
+    description: 'Update an existing cart in Hyros. Use this to modify items or customer info on a pending cart before it converts to an order.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        cartId: { type: 'string', description: 'The external cart ID to update' },
+        items: {
+          type: 'array',
+          description: 'Updated cart items',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Product name' },
+              price: { type: 'number', description: 'Price per unit' },
+              quantity: { type: 'number', description: 'Quantity' },
+              externalId: { type: 'string', description: 'External product ID' },
+              sku: { type: 'string', description: 'Product SKU' },
+            },
+            required: ['name', 'price'],
+            additionalProperties: false,
+          },
+        },
+        email: { type: 'string', description: 'Customer email' },
+        firstName: { type: 'string' },
+        lastName: { type: 'string' },
+        leadIps: { type: 'array', items: { type: 'string' }, description: 'Lead IP addresses' },
+        phoneNumbers: { type: 'array', items: { type: 'string' } },
+        date: { type: 'string', description: 'Cart date in ISO 8601 format' },
+        currency: { type: 'string', description: 'Currency code (e.g., USD)' },
+      },
+      required: ['cartId', 'items'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_create_click',
+    description: 'Manually track a click event in Hyros for attribution purposes. Use when you need to create a click record that was not automatically tracked by the Hyros tracking script.',
+    annotations: {
+      readOnlyHint: false,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        referrerUrl: { type: 'string', description: 'The URL where the click originated from (the ad or source URL)' },
+        sessionId: { type: 'string', description: 'Session identifier. Either sessionId or email is required.' },
+        email: { type: 'string', description: 'Lead email. Either sessionId or email is required.' },
+        previousUrl: { type: 'string', description: 'Previous URL before the click' },
+        userAgent: { type: 'string', description: 'Browser user agent string' },
+        ip: { type: 'string', description: 'Lead IP address' },
+        sourceLinkTag: { type: 'string', description: 'Source link tag (e.g., @source-name)' },
+        isOrganic: { type: 'boolean', description: 'Whether this is an organic (non-paid) click' },
+        integrationType: { type: 'string', description: 'Ad platform integration type (e.g., FACEBOOK, GOOGLE)' },
+        adSourceId: { type: 'string', description: 'Ad source ID' },
+        adspendAdId: { type: 'string', description: 'Ad spend ad ID' },
+        adSourceClickId: { type: 'string', description: 'Platform click ID (e.g., Facebook fbclid)' },
+        phones: { type: 'array', items: { type: 'string' }, description: 'Lead phone numbers' },
+        tag: { type: 'string', description: 'Tag to apply to this click' },
+        date: { type: 'string', description: 'Click date in ISO 8601 format' },
+      },
+      required: ['referrerUrl'],
+      additionalProperties: false,
     },
   },
 ];
 
+type WriteHandler = (args: Record<string, unknown>, client: HyrosClient) => Promise<unknown>;
+
+const writeHandlers: Record<string, WriteHandler> = {
+  hyros_create_lead: async (args, client) => {
+    const { email, phoneNumbers } = requireEmailOrPhone(args);
+    return client.createLead({
+      email,
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      tags: optStringArray(args, 'tags'),
+      leadIps: optStringArray(args, 'leadIps'),
+      phoneNumbers,
+      stage: optString(args, 'stage'),
+      adOptimizationConsent: optString(args, 'adOptimizationConsent') as 'GRANTED' | 'DENIED' | 'UNSPECIFIED' | undefined,
+    });
+  },
+
+  hyros_update_lead: async (args, client) => {
+    const searchEmail = optString(args, 'searchEmail');
+    const searchId = optString(args, 'searchId');
+    const searchPhone = optString(args, 'searchPhone');
+    if (!searchEmail && !searchId && !searchPhone) {
+      throw new Error('At least one search parameter (searchEmail, searchId, or searchPhone) must be provided');
+    }
+    const leadStageName = optString(args, 'leadStageName');
+    return client.updateLead(
+      {
+        email: searchEmail,
+        id: searchId,
+        phone: searchPhone,
+      },
+      {
+        email: optString(args, 'email'),
+        firstName: optString(args, 'firstName'),
+        lastName: optString(args, 'lastName'),
+        tags: optStringArray(args, 'tags'),
+        leadIps: optStringArray(args, 'leadIps'),
+        phoneNumbers: optStringArray(args, 'phoneNumbers'),
+        adOptimizationConsent: optString(args, 'adOptimizationConsent') as 'GRANTED' | 'DENIED' | 'UNSPECIFIED' | undefined,
+        leadStage: leadStageName
+          ? { name: leadStageName, date: optString(args, 'leadStageDate') }
+          : undefined,
+      },
+    );
+  },
+
+  hyros_create_order: async (args, client) => {
+    const { email, phoneNumbers } = requireEmailOrPhone(args);
+    return client.createOrder({
+      items: requireArray(args, 'items') as Array<{ name: string; price: number; quantity?: number }>,
+      email,
+      phoneNumbers,
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      leadIps: optStringArray(args, 'leadIps'),
+      orderId: optString(args, 'orderId'),
+      date: optString(args, 'date'),
+      currency: optString(args, 'currency'),
+      shipping: optNumber(args, 'shipping'),
+      taxes: optNumber(args, 'taxes'),
+      discount: optNumber(args, 'discount'),
+      stage: optString(args, 'stage'),
+    });
+  },
+
+  hyros_refund_order: async (args, client) =>
+    client.refundOrder(requireString(args, 'orderId'), optNumber(args, 'refundedAmount')),
+
+  hyros_update_sale: async (args, client) =>
+    client.updateSale({
+      ids: requireString(args, 'ids'),
+      isRecurringSale: optBoolean(args, 'isRecurringSale'),
+      isRefunded: optBoolean(args, 'isRefunded'),
+      refundedDate: optString(args, 'refundedDate'),
+      refundedAmount: optNumber(args, 'refundedAmount'),
+    }),
+
+  hyros_delete_sale: async (args, client) =>
+    client.deleteSale(requireString(args, 'saleId')),
+
+  hyros_create_call: async (args, client) =>
+    client.createCall({
+      name: requireString(args, 'name'),
+      email: optString(args, 'email'),
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      phoneNumbers: optStringArray(args, 'phoneNumbers'),
+      leadIps: optStringArray(args, 'leadIps'),
+      stage: optString(args, 'stage'),
+      externalId: optString(args, 'externalId'),
+      date: optString(args, 'date'),
+      qualification: optBoolean(args, 'qualification'),
+      state: optString(args, 'state'),
+    }),
+
+  hyros_update_call: async (args, client) =>
+    client.updateCall({
+      name: requireString(args, 'name'),
+      ids: optString(args, 'ids'),
+      externalIds: optString(args, 'externalIds'),
+      qualification: optBoolean(args, 'qualification'),
+      state: optString(args, 'state'),
+    }),
+
+  hyros_delete_call: async (args, client) =>
+    client.deleteCall(requireString(args, 'callId')),
+
+  hyros_create_subscription: async (args, client) =>
+    client.createSubscription({
+      status: requireString(args, 'status'),
+      startDate: requireString(args, 'startDate'),
+      price: requireNumber(args, 'price'),
+      periodicity: requireString(args, 'periodicity') as 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR',
+      email: optString(args, 'email'),
+      phoneNumbers: optStringArray(args, 'phoneNumbers'),
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      stage: optString(args, 'stage'),
+      subscriptionId: optString(args, 'subscriptionId'),
+      trialStartDate: optString(args, 'trialStartDate'),
+      trialEndDate: optString(args, 'trialEndDate'),
+      planId: optString(args, 'planId'),
+      cancelAtDate: optString(args, 'cancelAtDate'),
+    }),
+
+  hyros_update_subscription: async (args, client) =>
+    client.updateSubscription({
+      ids: requireString(args, 'ids'),
+      price: requireNumber(args, 'price'),
+      name: optString(args, 'name'),
+      status: optString(args, 'status'),
+      startDate: optString(args, 'startDate'),
+      trialStartDate: optString(args, 'trialStartDate'),
+      trialEndDate: optString(args, 'trialEndDate'),
+      cancelAtDate: optString(args, 'cancelAtDate'),
+    }),
+
+  hyros_create_source: async (args, client) =>
+    client.createSource({
+      name: requireString(args, 'name'),
+      accountId: optString(args, 'accountId'),
+      adSourceId: optString(args, 'adSourceId'),
+      adspendSubType: optString(args, 'adspendSubType'),
+      campaignId: optString(args, 'campaignId'),
+      category: optString(args, 'category'),
+      goal: optString(args, 'goal'),
+      integationType: optString(args, 'integationType'),
+      isDisregard: optBoolean(args, 'isDisregard'),
+      isOrganic: optBoolean(args, 'isOrganic'),
+      trafficSource: optString(args, 'trafficSource'),
+    }),
+
+  hyros_create_custom_cost: async (args, client) =>
+    client.createCustomCost({
+      startDate: requireString(args, 'startDate'),
+      frequency: requireString(args, 'frequency') as 'DAILY' | 'ONE_TIME',
+      cost: requireNumber(args, 'cost'),
+      tags: requireStringArray(args, 'tags'),
+      name: optString(args, 'name'),
+      endDate: optString(args, 'endDate'),
+    }),
+
+  hyros_create_product: async (args, client) =>
+    client.createProduct({
+      name: requireString(args, 'name'),
+      price: requireNumber(args, 'price'),
+      category: optString(args, 'category'),
+      packages: optString(args, 'packages'),
+    }),
+
+  hyros_create_cart: async (args, client) =>
+    client.createCart({
+      items: requireArray(args, 'items') as CartItem[],
+      cartId: optString(args, 'cartId'),
+      email: optString(args, 'email'),
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      leadIps: optStringArray(args, 'leadIps'),
+      phoneNumbers: optStringArray(args, 'phoneNumbers'),
+      date: optString(args, 'date'),
+      currency: optString(args, 'currency'),
+    }),
+
+  hyros_update_cart: async (args, client) =>
+    client.updateCart({
+      cartId: requireString(args, 'cartId'),
+      items: requireArray(args, 'items') as CartItem[],
+      email: optString(args, 'email'),
+      firstName: optString(args, 'firstName'),
+      lastName: optString(args, 'lastName'),
+      leadIps: optStringArray(args, 'leadIps'),
+      phoneNumbers: optStringArray(args, 'phoneNumbers'),
+      date: optString(args, 'date'),
+      currency: optString(args, 'currency'),
+    }),
+
+  hyros_create_click: async (args, client) => {
+    const sessionId = optString(args, 'sessionId');
+    const clickEmail = optString(args, 'email');
+    if (!sessionId && !clickEmail) {
+      throw new Error('At least one of sessionId or email must be provided');
+    }
+    return client.createClick({
+      referrerUrl: requireString(args, 'referrerUrl'),
+      sessionId,
+      email: clickEmail,
+      previousUrl: optString(args, 'previousUrl'),
+      userAgent: optString(args, 'userAgent'),
+      ip: optString(args, 'ip'),
+      sourceLinkTag: optString(args, 'sourceLinkTag'),
+      isOrganic: optBoolean(args, 'isOrganic'),
+      integrationType: optString(args, 'integrationType'),
+      adSourceId: optString(args, 'adSourceId'),
+      adspendAdId: optString(args, 'adspendAdId'),
+      adSourceClickId: optString(args, 'adSourceClickId'),
+      phones: optStringArray(args, 'phones'),
+      tag: optString(args, 'tag'),
+      date: optString(args, 'date'),
+    });
+  },
+};
+
 export async function handleWriteTool(name: string, args: Record<string, unknown>, client: HyrosClient): Promise<unknown> {
-  switch (name) {
-    case 'hyros_create_lead':
-      return client.createLead({
-        email: args.email as string | undefined,
-        firstName: args.firstName as string | undefined,
-        lastName: args.lastName as string | undefined,
-        tags: args.tags as string[] | undefined,
-        leadIps: args.leadIps as string[] | undefined,
-        phoneNumbers: args.phoneNumbers as string[] | undefined,
-        stage: args.stage as string | undefined,
-        adOptimizationConsent: args.adOptimizationConsent as 'GRANTED' | 'DENIED' | 'UNSPECIFIED' | undefined,
-      });
-
-    case 'hyros_update_lead':
-      return client.updateLead(
-        {
-          email: args.searchEmail as string | undefined,
-          id: args.searchId as string | undefined,
-          phone: args.searchPhone as string | undefined,
-        },
-        {
-          email: args.email as string | undefined,
-          firstName: args.firstName as string | undefined,
-          lastName: args.lastName as string | undefined,
-          tags: args.tags as string[] | undefined,
-          leadIps: args.leadIps as string[] | undefined,
-          phoneNumbers: args.phoneNumbers as string[] | undefined,
-          adOptimizationConsent: args.adOptimizationConsent as 'GRANTED' | 'DENIED' | 'UNSPECIFIED' | undefined,
-          leadStage: args.leadStageName
-            ? { name: args.leadStageName as string, date: args.leadStageDate as string | undefined }
-            : undefined,
-        },
-      );
-
-    case 'hyros_create_order':
-      return client.createOrder({
-        items: args.items as Array<{ name: string; price: number; quantity?: number }>,
-        email: args.email as string | undefined,
-        phoneNumbers: args.phoneNumbers as string[] | undefined,
-        firstName: args.firstName as string | undefined,
-        lastName: args.lastName as string | undefined,
-        leadIps: args.leadIps as string[] | undefined,
-        orderId: args.orderId as string | undefined,
-        date: args.date as string | undefined,
-        currency: args.currency as string | undefined,
-        shipping: args.shipping as number | undefined,
-        taxes: args.taxes as number | undefined,
-        discount: args.discount as number | undefined,
-        stage: args.stage as string | undefined,
-      });
-
-    case 'hyros_refund_order':
-      return client.refundOrder(args.orderId as string, args.refundedAmount as number | undefined);
-
-    case 'hyros_update_sale':
-      return client.updateSale({
-        ids: args.ids as string,
-        isRecurringSale: args.isRecurringSale as boolean | undefined,
-        isRefunded: args.isRefunded as boolean | undefined,
-        refundedDate: args.refundedDate as string | undefined,
-        refundedAmount: args.refundedAmount as number | undefined,
-      });
-
-    case 'hyros_delete_sale':
-      return client.deleteSale(args.saleId as string);
-
-    case 'hyros_create_call':
-      return client.createCall({
-        name: args.name as string,
-        email: args.email as string | undefined,
-        firstName: args.firstName as string | undefined,
-        lastName: args.lastName as string | undefined,
-        phoneNumbers: args.phoneNumbers as string[] | undefined,
-        leadIps: args.leadIps as string[] | undefined,
-        stage: args.stage as string | undefined,
-        externalId: args.externalId as string | undefined,
-        date: args.date as string | undefined,
-        qualification: args.qualification as boolean | undefined,
-        state: args.state as string | undefined,
-      });
-
-    case 'hyros_update_call':
-      return client.updateCall({
-        name: args.name as string,
-        ids: args.ids as string | undefined,
-        externalIds: args.externalIds as string | undefined,
-        qualification: args.qualification as boolean | undefined,
-        state: args.state as string | undefined,
-      });
-
-    case 'hyros_delete_call':
-      return client.deleteCall(args.callId as string);
-
-    case 'hyros_create_subscription':
-      return client.createSubscription({
-        status: args.status as string,
-        startDate: args.startDate as string,
-        price: args.price as number,
-        periodicity: args.periodicity as 'DAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR',
-        email: args.email as string | undefined,
-        phoneNumbers: args.phoneNumbers as string[] | undefined,
-        firstName: args.firstName as string | undefined,
-        lastName: args.lastName as string | undefined,
-        stage: args.stage as string | undefined,
-        subscriptionId: args.subscriptionId as string | undefined,
-        trialStartDate: args.trialStartDate as string | undefined,
-        trialEndDate: args.trialEndDate as string | undefined,
-        planId: args.planId as string | undefined,
-        cancelAtDate: args.cancelAtDate as string | undefined,
-      });
-
-    case 'hyros_update_subscription':
-      return client.updateSubscription({
-        ids: args.ids as string,
-        price: args.price as number,
-        name: args.name as string | undefined,
-        status: args.status as string | undefined,
-        startDate: args.startDate as string | undefined,
-        trialStartDate: args.trialStartDate as string | undefined,
-        trialEndDate: args.trialEndDate as string | undefined,
-        cancelAtDate: args.cancelAtDate as string | undefined,
-      });
-
-    case 'hyros_create_source':
-      return client.createSource({
-        name: args.name as string,
-        accountId: args.accountId as string | undefined,
-        adSourceId: args.adSourceId as string | undefined,
-        adspendSubType: args.adspendSubType as string | undefined,
-        campaignId: args.campaignId as string | undefined,
-        category: args.category as string | undefined,
-        goal: args.goal as string | undefined,
-        integationType: args.integationType as string | undefined,
-        isDisregard: args.isDisregard as boolean | undefined,
-        isOrganic: args.isOrganic as boolean | undefined,
-        trafficSource: args.trafficSource as string | undefined,
-      });
-
-    case 'hyros_create_custom_cost':
-      return client.createCustomCost({
-        startDate: args.startDate as string,
-        frequency: args.frequency as 'DAILY' | 'ONE_TIME',
-        cost: args.cost as number,
-        tags: args.tags as string[],
-        name: args.name as string | undefined,
-        endDate: args.endDate as string | undefined,
-      });
-
-    case 'hyros_create_product':
-      return client.createProduct({
-        name: args.name as string,
-        price: args.price as number,
-        category: args.category as string | undefined,
-        packages: args.packages as string | undefined,
-      });
-
-    default:
-      throw new Error(`Unknown write tool: ${name}`);
-  }
+  const handler = writeHandlers[name];
+  if (!handler) throw new Error(`Unknown write tool: ${name}`);
+  return handler(args, client);
 }

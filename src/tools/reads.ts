@@ -1,19 +1,28 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { HyrosClient } from '../client.js';
+import { requireString, optString, optNumber, optBoolean } from '../validation.js';
+import { extractPagination, extractListParams } from './helpers.js';
 
 export const readTools: Tool[] = [
   {
     name: 'hyros_get_user_info',
     description: 'Get the authenticated Hyros account information including email, timezone, and currency settings.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {},
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_leads',
     description: 'Search and retrieve leads from Hyros. Filter by email, ID, or date range. Use this to find customers, check their tags, and see when they joined.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -43,11 +52,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_lead_journey',
     description: 'Get the complete customer journey for one or more leads, including all sales, calls, carts, and ad attribution sources. Use this to understand what ads drove a customer to convert.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -57,11 +70,15 @@ export const readTools: Tool[] = [
         },
       },
       required: ['ids'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_sales',
     description: 'Retrieve sales records filtered by date, email, lead ID, product tag, or recurring/refund status. Use this to check revenue, see what products sold, and track refunds.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -109,11 +126,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_calls',
     description: 'Retrieve call records from Hyros. Useful for businesses with phone sales teams. Filter by date, email, qualification status, or call state.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -160,11 +181,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_subscriptions',
     description: 'Retrieve subscription records. Use this to check MRR, see active subscribers, find churned customers, and track subscription status changes.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -206,11 +231,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_clicks',
     description: 'Get click tracking data for a specific lead. Shows the ad clicks and traffic sources that led a customer to your site.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -240,20 +269,28 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_tags',
     description: 'Get all available tags in your Hyros account. Tags starting with $ are product tags, @ are source tags, ! are action tags.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {},
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_stages',
     description: 'Get all lead funnel stages configured in your Hyros account (e.g., MQL, SQL, Opportunity, Customer).',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -271,20 +308,28 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_domains',
     description: 'Get all verified domains in your Hyros account.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {},
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_sources',
     description: 'Get ad sources and campaigns tracked in Hyros. Sources represent your marketing channels, campaigns, and ad sets.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -315,11 +360,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_ads',
     description: 'Get ads from a specific advertising platform tracked in Hyros.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -342,11 +391,15 @@ export const readTools: Tool[] = [
         },
       },
       required: ['integrationType'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_keywords',
     description: 'Get keywords for a specific ad group (mainly for Google Ads keyword tracking).',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -356,11 +409,15 @@ export const readTools: Tool[] = [
         },
       },
       required: ['adgroupId'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_tracking_script',
     description: 'Get the Hyros tracking script to install on your website.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -370,11 +427,15 @@ export const readTools: Tool[] = [
         },
       },
       required: [],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_attribution_report',
     description: 'Get detailed attribution metrics for specific ads, campaigns, or ad sets. Use this to answer "what is my ROAS?", "how much did I earn vs spend?", "which ad has the best ROI?". Requires specifying the level (e.g., facebook_adset, google_campaign) and the IDs to query. Use hyros_get_sources to find source IDs first.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -445,11 +506,15 @@ export const readTools: Tool[] = [
         },
       },
       required: ['attributionModel', 'startDate', 'endDate', 'level', 'ids', 'fields'],
+      additionalProperties: false,
     },
   },
   {
     name: 'hyros_get_ad_account_report',
     description: 'Get attribution metrics grouped by ad account. Provide the ad account ID(s) to get aggregated performance across all campaigns/ads in those accounts.',
+    annotations: {
+      readOnlyHint: true,
+    },
     inputSchema: {
       type: 'object',
       properties: {
@@ -493,151 +558,119 @@ export const readTools: Tool[] = [
         },
       },
       required: ['attributionModel', 'startDate', 'endDate', 'ids', 'fields'],
+      additionalProperties: false,
     },
   },
 ];
 
+type ReadHandler = (args: Record<string, unknown>, client: HyrosClient) => Promise<unknown>;
+
+const readHandlers: Record<string, ReadHandler> = {
+  hyros_get_user_info: (_args, client) => client.getUserInfo(),
+
+  hyros_get_leads: (args, client) => client.getLeads({
+    ids: optString(args, 'ids'),
+    emails: optString(args, 'emails'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_lead_journey: (args, client) => client.getLeadJourney(requireString(args, 'ids')),
+
+  hyros_get_sales: (args, client) => client.getSales({
+    ids: optString(args, 'ids'),
+    emails: optString(args, 'emails'),
+    leadIds: optString(args, 'leadIds'),
+    productTags: optString(args, 'productTags'),
+    isRecurringSale: optString(args, 'isRecurringSale') as 'RECURRING' | 'NON_RECURRING' | 'ALL' | undefined,
+    saleRefundedState: optString(args, 'saleRefundedState') as 'REFUNDED' | 'NON_REFUNDED' | 'ALL' | undefined,
+    ...extractListParams(args),
+  }),
+
+  hyros_get_calls: (args, client) => client.getCalls({
+    ids: optString(args, 'ids'),
+    emails: optString(args, 'emails'),
+    leadIds: optString(args, 'leadIds'),
+    productTags: optString(args, 'productTags'),
+    qualified: optBoolean(args, 'qualified'),
+    state: optString(args, 'state'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_subscriptions: (args, client) => client.getSubscriptions({
+    ids: optString(args, 'ids'),
+    emails: optString(args, 'emails'),
+    leadIds: optString(args, 'leadIds'),
+    productTags: optString(args, 'productTags'),
+    subscriptionStates: optString(args, 'states'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_clicks: (args, client) => client.getClicks({
+    leadId: optString(args, 'leadId'),
+    email: optString(args, 'email'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_tags: (_args, client) => client.getTags(),
+
+  hyros_get_stages: (args, client) => client.getStages({
+    name: optString(args, 'name'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_domains: (_args, client) => client.getDomains(),
+
+  hyros_get_sources: (args, client) => client.getSources({
+    adSourceIds: optString(args, 'adSourceIds'),
+    includeOrganic: optBoolean(args, 'includeOrganic'),
+    includeDisregarded: optBoolean(args, 'includeDisregarded'),
+    integationType: optString(args, 'integationType'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_ads: (args, client) => client.getAds({
+    integrationType: requireString(args, 'integrationType'),
+    adSourceIds: optString(args, 'adSourceIds'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_keywords: (args, client) => client.getKeywords(requireString(args, 'adgroupId')),
+
+  hyros_get_tracking_script: (args, client) => client.getTrackingScript(optString(args, 'domain')),
+
+  hyros_get_attribution_report: (args, client) => client.getAttributionReport({
+    attributionModel: requireString(args, 'attributionModel') as 'last_click' | 'scientific' | 'first_click',
+    startDate: requireString(args, 'startDate'),
+    endDate: requireString(args, 'endDate'),
+    level: requireString(args, 'level'),
+    ids: requireString(args, 'ids'),
+    fields: requireString(args, 'fields'),
+    currency: optString(args, 'currency') as 'usd' | 'user_currency' | undefined,
+    windowAttributionDaysRange: optNumber(args, 'windowAttributionDaysRange'),
+    scientificDaysRange: optNumber(args, 'scientificDaysRange'),
+    dayOfAttribution: optBoolean(args, 'dayOfAttribution'),
+    isAdAccountId: optBoolean(args, 'isAdAccountId'),
+    timeGroupingOption: optString(args, 'timeGroupingOption'),
+    sourceConfiguration: optString(args, 'sourceConfiguration'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_ad_account_report: (args, client) => client.getAdAccountReport({
+    attributionModel: requireString(args, 'attributionModel') as 'last_click' | 'scientific' | 'first_click',
+    startDate: requireString(args, 'startDate'),
+    endDate: requireString(args, 'endDate'),
+    ids: requireString(args, 'ids'),
+    fields: requireString(args, 'fields'),
+    currency: optString(args, 'currency') as 'usd' | 'user_currency' | undefined,
+    windowAttributionDaysRange: optNumber(args, 'windowAttributionDaysRange'),
+    scientificDaysRange: optNumber(args, 'scientificDaysRange'),
+    dayOfAttribution: optBoolean(args, 'dayOfAttribution'),
+    ...extractPagination(args),
+  }),
+};
+
 export async function handleReadTool(name: string, args: Record<string, unknown>, client: HyrosClient): Promise<unknown> {
-  switch (name) {
-    case 'hyros_get_user_info':
-      return client.getUserInfo();
-
-    case 'hyros_get_leads':
-      return client.getLeads({
-        ids: args.ids as string | undefined,
-        emails: args.emails as string | undefined,
-        fromDate: args.fromDate as string | undefined,
-        toDate: args.toDate as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_lead_journey':
-      return client.getLeadJourney(args.ids as string);
-
-    case 'hyros_get_sales':
-      return client.getSales({
-        ids: args.ids as string | undefined,
-        emails: args.emails as string | undefined,
-        leadIds: args.leadIds as string | undefined,
-        productTags: args.productTags as string | undefined,
-        isRecurringSale: args.isRecurringSale as 'RECURRING' | 'NON_RECURRING' | 'ALL' | undefined,
-        saleRefundedState: args.saleRefundedState as 'REFUNDED' | 'NON_REFUNDED' | 'ALL' | undefined,
-        fromDate: args.fromDate as string | undefined,
-        toDate: args.toDate as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_calls':
-      return client.getCalls({
-        ids: args.ids as string | undefined,
-        emails: args.emails as string | undefined,
-        leadIds: args.leadIds as string | undefined,
-        productTags: args.productTags as string | undefined,
-        qualified: args.qualified as boolean | undefined,
-        state: args.state as string | undefined,
-        fromDate: args.fromDate as string | undefined,
-        toDate: args.toDate as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_subscriptions':
-      return client.getSubscriptions({
-        ids: args.ids as string | undefined,
-        emails: args.emails as string | undefined,
-        leadIds: args.leadIds as string | undefined,
-        productTags: args.productTags as string | undefined,
-        subscriptionStates: args.subscriptionStates as string | undefined,
-        fromDate: args.fromDate as string | undefined,
-        toDate: args.toDate as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_clicks':
-      return client.getClicks({
-        leadId: args.leadId as string | undefined,
-        email: args.email as string | undefined,
-        fromDate: args.fromDate as string | undefined,
-        toDate: args.toDate as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_tags':
-      return client.getTags();
-
-    case 'hyros_get_stages':
-      return client.getStages({
-        name: args.name as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_domains':
-      return client.getDomains();
-
-    case 'hyros_get_sources':
-      return client.getSources({
-        adSourceIds: args.adSourceIds as string | undefined,
-        includeOrganic: args.includeOrganic as boolean | undefined,
-        includeDisregarded: args.includeDisregarded as boolean | undefined,
-        integationType: args.integationType as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_ads':
-      return client.getAds({
-        integrationType: args.integrationType as string,
-        adSourceIds: args.adSourceIds as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_keywords':
-      return client.getKeywords(args.adgroupId as string);
-
-    case 'hyros_get_tracking_script':
-      return client.getTrackingScript(args.domain as string | undefined);
-
-    case 'hyros_get_attribution_report':
-      return client.getAttributionReport({
-        attributionModel: args.attributionModel as 'last_click' | 'scientific' | 'first_click',
-        startDate: args.startDate as string,
-        endDate: args.endDate as string,
-        level: args.level as string,
-        ids: args.ids as string,
-        fields: args.fields as string,
-        currency: args.currency as 'usd' | 'user_currency' | undefined,
-        windowAttributionDaysRange: args.windowAttributionDaysRange as number | undefined,
-        scientificDaysRange: args.scientificDaysRange as number | undefined,
-        dayOfAttribution: args.dayOfAttribution as boolean | undefined,
-        isAdAccountId: args.isAdAccountId as boolean | undefined,
-        timeGroupingOption: args.timeGroupingOption as string | undefined,
-        sourceConfiguration: args.sourceConfiguration as string | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    case 'hyros_get_ad_account_report':
-      return client.getAdAccountReport({
-        attributionModel: args.attributionModel as 'last_click' | 'scientific' | 'first_click',
-        startDate: args.startDate as string,
-        endDate: args.endDate as string,
-        ids: args.ids as string,
-        fields: args.fields as string,
-        currency: args.currency as 'usd' | 'user_currency' | undefined,
-        windowAttributionDaysRange: args.windowAttributionDaysRange as number | undefined,
-        scientificDaysRange: args.scientificDaysRange as number | undefined,
-        dayOfAttribution: args.dayOfAttribution as boolean | undefined,
-        pageSize: args.pageSize as number | undefined,
-        pageId: args.pageId as string | undefined,
-      });
-
-    default:
-      throw new Error(`Unknown read tool: ${name}`);
-  }
+  const handler = readHandlers[name];
+  if (!handler) throw new Error(`Unknown read tool: ${name}`);
+  return handler(args, client);
 }

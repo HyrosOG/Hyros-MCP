@@ -261,7 +261,7 @@ export interface AttributionMetrics {
   ltv?: number;
   refunds?: number;
   refundedAmount?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Request param types
@@ -358,4 +358,46 @@ export interface AdAccountReportParams extends PaginationParams {
   windowAttributionDaysRange?: number;
   scientificDaysRange?: number;
   dayOfAttribution?: boolean;
+}
+
+export interface CreateCartParams {
+  items: CartItem[];
+  cartId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  leadIps?: string[];
+  phoneNumbers?: string[];
+  date?: string;
+  currency?: string;
+}
+
+export interface UpdateCartParams {
+  cartId: string;
+  items: CartItem[];
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  leadIps?: string[];
+  phoneNumbers?: string[];
+  date?: string;
+  currency?: string;
+}
+
+export interface CreateClickParams {
+  referrerUrl: string;
+  sessionId?: string;
+  email?: string;
+  previousUrl?: string;
+  userAgent?: string;
+  ip?: string;
+  sourceLinkTag?: string;
+  isOrganic?: boolean;
+  integrationType?: string;
+  adSourceId?: string;
+  adspendAdId?: string;
+  adSourceClickId?: string;
+  phones?: string[];
+  tag?: string;
+  date?: string;
 }

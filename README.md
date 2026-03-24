@@ -1,6 +1,8 @@
 # Hyros MCP Server
 
-MCP server for the Hyros advertising attribution API. Enables LLMs to query and manage Hyros accounts.
+MCP server for the [Hyros](https://hyros.com) advertising attribution API. Enables LLMs to query and manage Hyros accounts through the Model Context Protocol.
+
+Built by [Carlos Aragon](https://carlosaragon.online).
 
 ## Setup
 
@@ -47,7 +49,7 @@ Add to your MCP client config file (e.g. `mcp_config.json`):
 - `hyros_get_attribution_report` - Attribution metrics for ads/campaigns
 - `hyros_get_ad_account_report` - Attribution metrics by ad account
 
-### Write Operations (14)
+### Write Operations (17)
 - `hyros_create_lead` - Create a new lead
 - `hyros_update_lead` - Update lead data and tags
 - `hyros_create_order` - Register a new sale/order
@@ -62,6 +64,9 @@ Add to your MCP client config file (e.g. `mcp_config.json`):
 - `hyros_create_source` - Create ad source
 - `hyros_create_custom_cost` - Add custom ad cost
 - `hyros_create_product` - Create product
+- `hyros_create_cart` - Track a shopping cart before purchase
+- `hyros_update_cart` - Update pending cart items
+- `hyros_create_click` - Manually record a click event
 
 ### Compound/Smart Tools (5)
 - `hyros_daily_summary` - Today's performance overview (revenue + leads + top ads)
@@ -79,3 +84,16 @@ Add to your MCP client config file (e.g. `mcp_config.json`):
 - `daily_briefing` - Daily performance summary
 - `campaign_analysis` - Campaign performance analysis
 - `lead_lookup` - Investigate a specific lead
+
+## Development
+
+```bash
+npm install       # Install dependencies
+npm run build     # Compile TypeScript
+npm run dev       # Run in development mode
+npm test          # Run test suite (137 tests)
+```
+
+## License
+
+Built by [Carlos Aragon](https://carlosaragon.online).

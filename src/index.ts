@@ -24,7 +24,14 @@ if (!apiKey) {
 }
 
 const baseUrl = process.env.HYROS_BASE_URL ?? 'https://api.hyros.com/v1';
-const client = new HyrosClient(apiKey, baseUrl);
+
+let client: HyrosClient;
+try {
+  client = new HyrosClient(apiKey, baseUrl);
+} catch (error) {
+  console.error(`Error: ${error instanceof Error ? error.message : error}`);
+  process.exit(1);
+}
 
 // ─── Server Setup ──────────────────────────────────────────────────────────
 
@@ -346,6 +353,16 @@ async function main() {
   await server.connect(transport);
   console.error('Hyros MCP server running on stdio');
 }
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await server.close();
+  process.exit(0);
+});
+process.on('SIGTERM', async () => {
+  await server.close();
+  process.exit(0);
+});
 
 main().catch((error) => {
   console.error('Fatal error:', error);

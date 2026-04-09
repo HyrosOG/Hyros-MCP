@@ -11,7 +11,9 @@ Built by [Carlos Aragon](https://carlosaragon.online).
 
 ## Quick Start
 
-### Claude Desktop
+Get your API key from **Hyros Dashboard → Settings → Integrations → API**.
+
+### Claude Desktop — macOS / Linux
 
 Add to your `claude_desktop_config.json`:
 
@@ -29,17 +31,37 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
+### Claude Desktop — Windows
+
+On Windows, use `cmd /c` to avoid a known npx path issue:
+
+```json
+{
+  "mcpServers": {
+    "hyros": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "hyros-mcp"],
+      "env": {
+        "HYROS_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+**Config file location:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+After editing the config, **restart Claude Desktop completely**.
+
 ### Claude Code (CLI)
 
 ```bash
-claude mcp add hyros -- npx -y hyros-mcp
+claude mcp add hyros -e HYROS_API_KEY=your_api_key_here -- npx -y hyros-mcp
 ```
-
-Then set your API key in the environment.
 
 ### Cursor / Windsurf
 
-Add to your MCP config:
+Add to your MCP settings file:
 
 ```json
 {
@@ -54,6 +76,17 @@ Add to your MCP config:
   }
 }
 ```
+
+## Troubleshooting
+
+**"401 Unauthorized" errors** — The API key is missing or not being passed. Check that:
+1. `HYROS_API_KEY` is inside the `env` block (not `args`)
+2. The key is copied correctly from Hyros → Settings → Integrations → API
+3. You fully restarted Claude Desktop after editing the config
+
+**"not recognized as an internal or external command" (Windows)** — Use the Windows config above with `cmd /c`.
+
+**MCP not showing up** — Restart Claude Desktop. The config is only read at startup.
 
 ## Configuration
 

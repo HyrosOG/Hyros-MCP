@@ -33,6 +33,8 @@ import type {
 const DEFAULT_TIMEOUT_MS = 30_000;
 const MAX_RETRIES = 3;
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
+// 401 can occasionally be transient on Hyros (auth service flakiness) — allow one retry
+const TRANSIENT_AUTH_CODES = new Set([401]);
 const MAX_REQUESTS_PER_SECOND = 25; // Hyros limit is 30/sec; leave headroom
 
 export class HyrosClient {
@@ -121,6 +123,12 @@ export class HyrosClient {
           continue;
         }
 
+        // 401 can be transiently returned by Hyros — retry once with a short delay
+        if (TRANSIENT_AUTH_CODES.has(response.status) && attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+
         if (!response.ok) {
           let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
           try {
@@ -133,6 +141,9 @@ export class HyrosClient {
             }
           } catch {
             // ignore JSON parse error on error response
+          }
+          if (response.status === 401) {
+            errorMessage += ' — verify your HYROS_API_KEY is correct and has the required permissions';
           }
           throw new Error(errorMessage);
         }

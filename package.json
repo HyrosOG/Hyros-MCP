@@ -1,11 +1,11 @@
 {
   "name": "hyros-mcp",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "MCP server for Hyros advertising attribution API — 38 tools for leads, sales, calls, subscriptions, attribution reports, and smart analytics",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "hyros-mcp": "./dist/index.js"
+    "hyros-mcp": "dist/index.js"
   },
   "files": [
     "dist",
@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "docx": "^9.6.1",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }

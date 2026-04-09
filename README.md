@@ -9,20 +9,33 @@ MCP server for the [Hyros](https://hyros.com) advertising attribution API. Gives
 
 Built by [Carlos Aragon](https://carlosaragon.online).
 
-## Quick Start
+## Installation
 
-Get your API key from **Hyros Dashboard → Settings → Integrations → API**.
+### Step 1 — Install the package
 
-### Claude Desktop — macOS / Linux
+Open a terminal and run:
 
-Add to your `claude_desktop_config.json`:
+```bash
+npm install -g hyros-mcp
+```
+
+This works on **Windows, macOS, and Linux**.
+
+### Step 2 — Add to Claude Desktop
+
+Open your Claude Desktop config file:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+Add this (replace `your_api_key_here` with your key from **Hyros → Settings → Integrations → API**):
 
 ```json
 {
   "mcpServers": {
     "hyros": {
-      "command": "npx",
-      "args": ["-y", "hyros-mcp"],
+      "command": "hyros-mcp",
+      "args": [],
       "env": {
         "HYROS_API_KEY": "your_api_key_here"
       }
@@ -31,62 +44,35 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-### Claude Desktop — Windows
+### Step 3 — Restart Claude Desktop
 
-On Windows, use `cmd /c` to avoid a known npx path issue:
+Close and reopen Claude Desktop. That's it — you're ready to use it.
 
-```json
-{
-  "mcpServers": {
-    "hyros": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "hyros-mcp"],
-      "env": {
-        "HYROS_API_KEY": "your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-**Config file location:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-After editing the config, **restart Claude Desktop completely**.
+---
 
 ### Claude Code (CLI)
 
 ```bash
-claude mcp add hyros -e HYROS_API_KEY=your_api_key_here -- npx -y hyros-mcp
+npm install -g hyros-mcp
+claude mcp add hyros -e HYROS_API_KEY=your_api_key_here -- hyros-mcp
 ```
 
 ### Cursor / Windsurf
 
-Add to your MCP settings file:
+Same config as Claude Desktop above — add it to your MCP settings file.
 
-```json
-{
-  "mcpServers": {
-    "hyros": {
-      "command": "npx",
-      "args": ["-y", "hyros-mcp"],
-      "env": {
-        "HYROS_API_KEY": "your_api_key_here"
-      }
-    }
-  }
-}
-```
+---
 
 ## Troubleshooting
 
-**"401 Unauthorized" errors** — The API key is missing or not being passed. Check that:
-1. `HYROS_API_KEY` is inside the `env` block (not `args`)
-2. The key is copied correctly from Hyros → Settings → Integrations → API
-3. You fully restarted Claude Desktop after editing the config
+**"401 Unauthorized"** — Your API key is wrong or missing. Make sure:
+1. `HYROS_API_KEY` is inside the `env` block
+2. The key is copied exactly from Hyros → Settings → Integrations → API
+3. You restarted Claude Desktop after saving the config
 
-**"not recognized as an internal or external command" (Windows)** — Use the Windows config above with `cmd /c`.
+**MCP tools not showing up** — Restart Claude Desktop. The config is only read at startup.
 
-**MCP not showing up** — Restart Claude Desktop. The config is only read at startup.
+**"command not found: hyros-mcp"** — The global install didn't complete. Run `npm install -g hyros-mcp` again and make sure npm's global bin folder is in your PATH.
 
 ## Configuration
 

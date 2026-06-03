@@ -42,11 +42,23 @@ text and never touches the client's machine.
 ### 1. Cloudflare API token
 
 Create an API token at https://dash.cloudflare.com/profile/api-tokens with these
-**Account** permissions (all **Edit** level):
+permissions:
+
+**Account** scope:
 
 - **Workers Scripts** → Edit
 - **Workers KV Storage** → Edit
 - **Account Settings** → Read
+
+**Zone** scope (required because the Worker uses a custom domain):
+
+- **Workers Routes** → Edit
+
+Under **Zone Resources**, include the custom-domain zone (`callwithcarlos.com`)
+or "All zones". Without the Zone → Workers Routes permission the script still
+deploys, but `wrangler deploy` fails its final route-reconciliation step with
+`Authentication error [code: 10000]`. (Account permissions alone are a different
+category and do not cover zone routes.)
 
 Then export it (or `wrangler login` for browser OAuth instead):
 

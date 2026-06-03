@@ -31,8 +31,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Use the project's own wrangler (v4, from npm ci) so it matches local and
+      # understands wrangler.jsonc. The Cloudflare wrangler-action pins an older
+      # wrangler that predates wrangler.jsonc support.
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

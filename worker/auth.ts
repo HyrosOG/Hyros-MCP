@@ -1,5 +1,6 @@
 import type { AuthRequest, OAuthHelpers } from '@cloudflare/workers-oauth-provider';
 import { HyrosClient } from '../src/client.js';
+import { iconResponse } from './icon.js';
 import type { HyrosProps } from './mcp.js';
 
 type Env = {
@@ -15,6 +16,7 @@ function page(body: string): Response {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/icon.svg" />
 <title>Connect Hyros</title>
 <style>
   :root { color-scheme: light dark; }
@@ -96,6 +98,10 @@ async function userIdFromKey(apiKey: string): Promise<string> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === '/icon.svg' || url.pathname === '/favicon.svg' || url.pathname === '/favicon.ico') {
+      return iconResponse();
+    }
 
     if (url.pathname === '/authorize' && request.method === 'GET') {
       const oauthReq = await env.OAUTH_PROVIDER.parseAuthRequest(request);

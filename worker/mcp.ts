@@ -10,6 +10,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { HyrosClient } from '../src/client.js';
+import { ICON_URL } from './icon.js';
 import { readTools, handleReadTool } from '../src/tools/reads.js';
 import { writeTools, handleWriteTool } from '../src/tools/writes.js';
 import { compoundTools, handleCompoundTool } from '../src/tools/compound.js';
@@ -86,7 +87,13 @@ const prompts = [
 
 export class HyrosMCP extends McpAgent<Env, unknown, HyrosProps> {
   server = new Server(
-    { name: 'hyros-mcp', version: '2.0.0' },
+    {
+      name: 'hyros-mcp',
+      title: 'Hyros',
+      version: '2.0.0',
+      websiteUrl: 'https://hyros.com',
+      icons: [{ src: ICON_URL, mimeType: 'image/svg+xml', sizes: ['48x48', 'any'] }],
+    },
     { capabilities: { tools: {}, resources: {}, prompts: {} } },
   );
 

@@ -358,6 +358,11 @@ export interface AdAccountReportParams extends PaginationParams {
   windowAttributionDaysRange?: number;
   scientificDaysRange?: number;
   dayOfAttribution?: boolean;
+  dateTimeGroupingOption?: 'ad_account' | 'day' | 'week' | 'month' | 'year';
+  sourceConfiguration?: string;
+  ignoreRecurringSales?: boolean;
+  forecastingOption?: 'first_sale' | 'total_sales';
+  newCustomerConfiguration?: string;
 }
 
 export interface CreateCartParams {

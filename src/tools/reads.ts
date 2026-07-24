@@ -548,6 +548,30 @@ export const readTools: Tool[] = [
           type: 'number',
           description: 'Attribution window in days (0-365)',
         },
+        dateTimeGroupingOption: {
+          type: 'string',
+          enum: ['ad_account', 'day', 'week', 'month', 'year'],
+          description: 'Group results by time period instead of a single aggregate row (default: ad_account). Note: the Hyros API currently ignores this on some accounts and returns one aggregate row regardless.',
+        },
+        sourceConfiguration: {
+          type: 'string',
+          enum: ['all_sources', 'only_organic', 'only_paid', 'prioritize_organic', 'prioritize_paid'],
+          description: 'Which sources to include in attribution',
+        },
+        ignoreRecurringSales: {
+          type: 'boolean',
+          description: 'Exclude recurring sales from the report',
+        },
+        forecastingOption: {
+          type: 'string',
+          enum: ['first_sale', 'total_sales'],
+          description: 'Forecasting basis for LTV/forecast fields',
+        },
+        newCustomerConfiguration: {
+          type: 'string',
+          enum: ['all_customers', 'only_returning_customers', 'only_unique_customers'],
+          description: 'Customer cohort to include',
+        },
         pageSize: {
           type: 'number',
           description: 'Results per page (max 250)',
@@ -665,6 +689,11 @@ const readHandlers: Record<string, ReadHandler> = {
     windowAttributionDaysRange: optNumber(args, 'windowAttributionDaysRange'),
     scientificDaysRange: optNumber(args, 'scientificDaysRange'),
     dayOfAttribution: optBoolean(args, 'dayOfAttribution'),
+    dateTimeGroupingOption: optString(args, 'dateTimeGroupingOption') as 'ad_account' | 'day' | 'week' | 'month' | 'year' | undefined,
+    sourceConfiguration: optString(args, 'sourceConfiguration'),
+    ignoreRecurringSales: optBoolean(args, 'ignoreRecurringSales'),
+    forecastingOption: optString(args, 'forecastingOption') as 'first_sale' | 'total_sales' | undefined,
+    newCustomerConfiguration: optString(args, 'newCustomerConfiguration'),
     ...extractPagination(args),
   }),
 };

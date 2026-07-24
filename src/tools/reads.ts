@@ -548,6 +548,14 @@ export const readTools: Tool[] = [
           type: 'number',
           description: 'Attribution window in days (0-365)',
         },
+        scientificDaysRange: {
+          type: 'number',
+          description: 'Day range (1-30) for first ad attribution, used with the scientific model',
+        },
+        dayOfAttribution: {
+          type: 'boolean',
+          description: 'If true, filters by click date instead of sale date',
+        },
         dateTimeGroupingOption: {
           type: 'string',
           enum: ['ad_account', 'day', 'week', 'month', 'year'],

@@ -358,7 +358,8 @@ export interface AdAccountReportParams extends PaginationParams {
   windowAttributionDaysRange?: number;
   scientificDaysRange?: number;
   dayOfAttribution?: boolean;
-  dateTimeGroupingOption?: 'ad_account' | 'day' | 'week' | 'month' | 'year';
+  // The docs call this dateTimeGroupingOption, but the API only honors adLevelDateGroupingOption.
+  adLevelDateGroupingOption?: 'ad_account' | 'day' | 'week' | 'month' | 'year';
   sourceConfiguration?: string;
   ignoreRecurringSales?: boolean;
   forecastingOption?: 'first_sale' | 'total_sales';

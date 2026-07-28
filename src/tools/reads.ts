@@ -559,7 +559,7 @@ export const readTools: Tool[] = [
         dateTimeGroupingOption: {
           type: 'string',
           enum: ['ad_account', 'day', 'week', 'month', 'year'],
-          description: 'Group results by time period instead of a single aggregate row (default: ad_account). Note: the Hyros API currently ignores this on some accounts and returns one aggregate row regardless.',
+          description: 'Group results by time period instead of a single aggregate row (default: ad_account). With day, a 30-day window returns 30 rows whose costs sum to the aggregate total.',
         },
         sourceConfiguration: {
           type: 'string',
@@ -697,7 +697,7 @@ const readHandlers: Record<string, ReadHandler> = {
     windowAttributionDaysRange: optNumber(args, 'windowAttributionDaysRange'),
     scientificDaysRange: optNumber(args, 'scientificDaysRange'),
     dayOfAttribution: optBoolean(args, 'dayOfAttribution'),
-    dateTimeGroupingOption: optString(args, 'dateTimeGroupingOption') as 'ad_account' | 'day' | 'week' | 'month' | 'year' | undefined,
+    adLevelDateGroupingOption: optString(args, 'dateTimeGroupingOption') as 'ad_account' | 'day' | 'week' | 'month' | 'year' | undefined,
     sourceConfiguration: optString(args, 'sourceConfiguration'),
     ignoreRecurringSales: optBoolean(args, 'ignoreRecurringSales'),
     forecastingOption: optString(args, 'forecastingOption') as 'first_sale' | 'total_sales' | undefined,

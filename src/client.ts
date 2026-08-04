@@ -21,6 +21,7 @@ import type {
   AdsQueryParams,
   Keyword,
   LeadJourney,
+  LeadJourneyQueryParams,
   AttributionMetrics,
   AttributionReportParams,
   AdAccountReportParams,
@@ -28,6 +29,21 @@ import type {
   CartItem,
   UpdateCartParams,
   CreateClickParams,
+  Product,
+  ProductsQueryParams,
+  UpdateProductParams,
+  CustomCost,
+  CustomCostsQueryParams,
+  CustomCostParams,
+  Cart,
+  CartsQueryParams,
+  TagCount,
+  TagsCountQueryParams,
+  AdAccount,
+  AdAccountsQueryParams,
+  UpdateSourceParams,
+  WebhookSubscription,
+  CreateWebhookSubscriptionParams,
 } from './types.js';
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -217,8 +233,8 @@ export class HyrosClient {
   }
 
   /** Retrieve the full attribution journey (touchpoints) for one or more leads. */
-  async getLeadJourney(ids: string): Promise<HyrosApiResponse<LeadJourney[]>> {
-    return this.request('GET', '/api/v1.0/leads/journey', { ids });
+  async getLeadJourney(params: LeadJourneyQueryParams): Promise<HyrosApiResponse<LeadJourney[]>> {
+    return this.request('GET', '/api/v1.0/leads/journey', params as Record<string, string | boolean | undefined>);
   }
 
   /** Query sales records by lead, date range, or other filters. Supports pagination. */
@@ -286,6 +302,36 @@ export class HyrosClient {
     return this.request('GET', '/api/v1.0/attribution/ad-account', params as unknown as Record<string, string | number | boolean | undefined>);
   }
 
+  /** List tags with the number of leads carrying each one. Supersedes getTags. */
+  async getTagsCount(params: TagsCountQueryParams): Promise<HyrosApiResponse<TagCount[]>> {
+    return this.request('GET', '/api/v1.0/tags/count', params as Record<string, string | number | boolean | undefined>);
+  }
+
+  /** List connected ad accounts. Omit `ids` to get every account. */
+  async getAdAccounts(params: AdAccountsQueryParams): Promise<HyrosApiResponse<AdAccount[]>> {
+    return this.request('GET', '/api/v1.0/ad-accounts', params as Record<string, string | number | boolean | undefined>);
+  }
+
+  /** Query products in the catalog. */
+  async getProducts(params: ProductsQueryParams): Promise<HyrosApiResponse<Product[]>> {
+    return this.request('GET', '/api/v1.0/products', params as Record<string, string | number | boolean | undefined>);
+  }
+
+  /** Query custom costs active within a date window. */
+  async getCustomCosts(params: CustomCostsQueryParams): Promise<HyrosApiResponse<CustomCost[]>> {
+    return this.request('GET', '/api/v1.0/custom-costs', params as Record<string, string | number | boolean | undefined>);
+  }
+
+  /** Query carts. Use `purchased: false` to find abandoned carts. */
+  async getCarts(params: CartsQueryParams): Promise<HyrosApiResponse<Cart[]>> {
+    return this.request('GET', '/api/v1.0/carts', params as Record<string, string | number | boolean | undefined>);
+  }
+
+  /** List webhook subscriptions configured for the account. */
+  async getWebhookSubscriptions(): Promise<HyrosApiResponse<WebhookSubscription[]>> {
+    return this.request('GET', '/api/v1.0/webhook-subscriptions');
+  }
+
   // ─── WRITE OPERATIONS ─────────────────────────────────────────────
 
   /** Create a new lead with optional tags, IPs, phone numbers, and stage. */
@@ -310,6 +356,7 @@ export class HyrosClient {
       firstName?: string;
       lastName?: string;
       tags?: string[];
+      removeTags?: string[];
       leadIps?: string[];
       phoneNumbers?: string[];
       adOptimizationConsent?: 'GRANTED' | 'DENIED' | 'UNSPECIFIED';
@@ -322,6 +369,11 @@ export class HyrosClient {
       searchParams as Record<string, string | number | boolean | undefined>,
       data,
     );
+  }
+
+  /** Permanently erase a lead and its PII, found by email or id. */
+  async deleteLead(searchParams: { email?: string; id?: string }): Promise<HyrosApiResponse<string>> {
+    return this.request('DELETE', '/api/v1.0/leads', searchParams as Record<string, string | undefined>);
   }
 
   /** Create a new order with line items, shipping, taxes, and discount. */
@@ -495,5 +547,50 @@ export class HyrosClient {
   /** Record a new click event for attribution tracking. */
   async createClick(params: CreateClickParams): Promise<HyrosApiResponse<string>> {
     return this.request('POST', '/api/v1.0/clicks', undefined, params);
+  }
+
+  /** Update a product's price, SKU, cost of goods, or category. */
+  async updateProduct(id: string, data: UpdateProductParams): Promise<HyrosApiResponse<string>> {
+    return this.request('PUT', `/api/v1.0/products/${encodeURIComponent(id)}`, undefined, data);
+  }
+
+  /** Delete a product from the catalog. */
+  async deleteProduct(id: string): Promise<HyrosApiResponse<string>> {
+    return this.request('DELETE', `/api/v1.0/products/${encodeURIComponent(id)}`);
+  }
+
+  /** Replace a custom cost's amount, frequency, window, or tags. */
+  async updateCustomCost(id: string, data: CustomCostParams): Promise<HyrosApiResponse<string>> {
+    return this.request('PUT', `/api/v1.0/custom-costs/${encodeURIComponent(id)}`, undefined, data);
+  }
+
+  /** Delete a custom cost so it stops skewing profit and ROAS. */
+  async deleteCustomCost(id: string): Promise<HyrosApiResponse<string>> {
+    return this.request('DELETE', `/api/v1.0/custom-costs/${encodeURIComponent(id)}`);
+  }
+
+  /** Update an ad source. Addressed by its tag, not by an id. */
+  async updateSource(tag: string, data: UpdateSourceParams): Promise<HyrosApiResponse<string>> {
+    return this.request('PUT', `/api/v1.0/sources/${encodeURIComponent(tag)}`, undefined, data);
+  }
+
+  /** Delete an ad source by its tag. */
+  async deleteSource(tag: string): Promise<HyrosApiResponse<string>> {
+    return this.request('DELETE', `/api/v1.0/sources/${encodeURIComponent(tag)}`);
+  }
+
+  /**
+   * Create a webhook subscription. Unlike most writes this one is synchronous
+   * and returns `secretKey`, which is never retrievable again.
+   */
+  async createWebhookSubscription(
+    params: CreateWebhookSubscriptionParams,
+  ): Promise<HyrosApiResponse<WebhookSubscription>> {
+    return this.request('POST', '/api/v1.0/webhook-subscriptions', undefined, params);
+  }
+
+  /** Delete a webhook subscription by its externalId. */
+  async deleteWebhookSubscription(externalId: string): Promise<HyrosApiResponse<string>> {
+    return this.request('DELETE', `/api/v1.0/webhook-subscriptions/${encodeURIComponent(externalId)}`);
   }
 }

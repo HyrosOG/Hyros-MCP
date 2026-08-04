@@ -15,14 +15,27 @@ export interface Lead {
   email: string;
   id: string;
   creationDate: string;
+  lastUpdatedDate?: string;
   tags?: string[];
   ips?: string[];
   phoneNumbers?: string[];
   firstName?: string;
   lastName?: string;
-  stage?: string;
   provider?: IntegrationProvider;
+  currentStage?: LeadStage;
+  adOptimizationConsent?: AdOptimizationConsent;
+  firstSource?: AdSource;
+  lastSource?: AdSource;
+  originLead?: Lead;
+  isOriginLead?: boolean;
 }
+
+export interface LeadStage {
+  name: string;
+  date?: string;
+}
+
+export type AdOptimizationConsent = 'GRANTED' | 'DENIED' | 'UNSPECIFIED';
 
 export interface IntegrationProvider {
   id: string;
@@ -278,6 +291,12 @@ export interface DateRangeParams {
 export interface LeadsQueryParams extends PaginationParams, DateRangeParams {
   ids?: string;
   emails?: string;
+  phones?: string;
+  tags?: string;
+  stage?: string;
+  // fromDate/toDate filter on join date; these filter on last-modified time.
+  updatedFromDate?: string;
+  updatedToDate?: string;
 }
 
 export interface SalesQueryParams extends PaginationParams, DateRangeParams {
@@ -313,6 +332,12 @@ export interface ClicksQueryParams extends PaginationParams, DateRangeParams {
 
 export interface StagesQueryParams extends PaginationParams {
   name?: string;
+}
+
+export interface LeadJourneyQueryParams {
+  ids?: string;
+  emails?: string;
+  includeEvents?: boolean;
 }
 
 export interface SourcesQueryParams extends PaginationParams {
@@ -406,4 +431,135 @@ export interface CreateClickParams {
   phones?: string[];
   tag?: string;
   date?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  tag?: string;
+  sku?: string;
+  price?: number;
+  customCost?: number;
+  recurring?: boolean;
+  callProduct?: boolean;
+  category?: string;
+}
+
+export interface ProductsQueryParams extends PaginationParams {
+  ids?: string;
+  name?: string;
+  tags?: string;
+  category?: string;
+}
+
+export interface UpdateProductParams {
+  name?: string;
+  price?: number;
+  sku?: string;
+  costOfGoods?: number;
+  category?: string;
+  recurring?: boolean;
+}
+
+export interface CustomCost {
+  id: string;
+  cost: number;
+  frequency: CustomCostFrequency;
+  startDate: string;
+  endDate?: string;
+  name?: string;
+  tags?: string[];
+}
+
+export type CustomCostFrequency = 'ONE_TIME' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+
+export interface CustomCostsQueryParams extends PaginationParams {
+  ids?: string;
+  // Filters on the cost's active window, not on its creation date.
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface CustomCostParams {
+  cost: number;
+  frequency: CustomCostFrequency;
+  startDate: string;
+  tags: string[];
+  endDate?: string;
+  name?: string;
+}
+
+export interface Cart {
+  id: string;
+  creationDate: string;
+  orderId?: string;
+  events?: number;
+  items?: CartItem[];
+  provider?: IntegrationProvider;
+}
+
+export interface CartsQueryParams extends PaginationParams, DateRangeParams {
+  emails?: string;
+  leadIds?: string;
+  purchased?: boolean;
+}
+
+export interface TagCount {
+  name: string;
+  amount: number;
+}
+
+export interface TagsCountQueryParams extends PaginationParams {
+  // Exact match, not a prefix or substring search: `@california` hits, `calif` does not.
+  name?: string;
+}
+
+export interface AdAccount {
+  id: string;
+  name: string;
+  type?: string;
+}
+
+export interface AdAccountsQueryParams {
+  ids?: string;
+  fields?: string;
+}
+
+export interface UpdateSourceParams {
+  name?: string;
+  category?: string;
+  goal?: string;
+  trafficSource?: string;
+  isDisregard?: boolean;
+  isOrganic?: boolean;
+}
+
+export type WebhookEventType =
+  | 'sale.attributed'
+  | 'sale.refunded'
+  | 'lead.opted.in'
+  | 'lead.origin.assigned'
+  | 'lead.stage.changed'
+  | 'lead.tag.added'
+  | 'lead.tag.removed'
+  | 'call.attributed'
+  | 'subscription.created'
+  | 'subscription.status.changed';
+
+export interface WebhookSubscription {
+  externalId: string;
+  name: string;
+  targetUrl: string;
+  eventTypes: WebhookEventType[];
+  state?: string;
+  /** Returned only by the create call; store it to verify X-Hyros-Signature. */
+  secretKey?: string;
+  creationDate?: number;
+  lastDeliveryDate?: number | null;
+}
+
+export interface CreateWebhookSubscriptionParams {
+  name: string;
+  targetUrl: string;
+  eventTypes: WebhookEventType[];
 }

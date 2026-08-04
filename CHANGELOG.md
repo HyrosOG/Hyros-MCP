@@ -75,6 +75,11 @@ Writes are queued by the API. Creates were visible in about 5 seconds during
 testing, but a chain of updates took roughly 5 minutes to land, well past the
 "~10 seconds" the Hyros spec states. Treat a `200` as accepted, not applied.
 
-## [1.0.4]
+## [1.0.4] and earlier
 
 Baseline before this changelog existed. See the git history.
+
+Versions 1.0.0 through 1.0.4 are on npm but carry no git tag, and none will be
+added: mapping them back to commits after the fact would be guesswork. Tagging
+starts at `v1.1.0`. To inspect an older release, install it from npm rather than
+looking for a tag.

@@ -5,7 +5,7 @@
 
 Connect [Hyros](https://hyros.com) advertising attribution to AI assistants (Claude, Cursor, etc.) through the [Model Context Protocol](https://modelcontextprotocol.io). Ask questions about your leads, sales, calls, subscriptions, and ad performance — and let the AI pull the data and run the reports for you.
 
-**38 tools** covering leads, sales, calls, subscriptions, attribution reports, ad management, and smart analytics.
+**53 tools** covering leads, sales, calls, subscriptions, products, custom costs, carts, webhooks, attribution reports, ad management, and smart analytics. Targets Hyros REST API v1.39 and Webhooks v1.1.
 
 Built by [Carlos Aragon](https://carlosaragon.online).
 
@@ -41,6 +41,34 @@ Inside Claude, every tool can be set to:
 
 You'll find these in the connector's settings in Claude. The tools that *change*
 data (create a lead, refund an order, etc.) are flagged so Claude asks first by default.
+
+### If a tool answers "Unauthorized"
+
+Hyros API keys carry **roles**, and several endpoints need a role that is not on
+a key by default. When a key lacks the role the API replies `401 Unauthorized`
+with no explanation of which role is missing, so the tool looks broken when the
+key is simply too narrow.
+
+Verified against Hyros API v1.39 on 2026-08-04, these tools need extra roles:
+
+| Tools | Needs a role for |
+|---|---|
+| `hyros_get_products`, `hyros_update_product`, `hyros_delete_product` | Products |
+| `hyros_get_custom_costs`, `hyros_update_custom_cost`, `hyros_delete_custom_cost` | Custom costs |
+| `hyros_get_carts` | Carts |
+| `hyros_get_webhook_subscriptions`, `hyros_create_webhook_subscription`, `hyros_delete_webhook_subscription` | Webhooks |
+| `hyros_update_source`, `hyros_delete_source` | Sources (write) |
+| `hyros_delete_lead` | Leads (delete) |
+
+Fix it in the Hyros app under **Settings → API Keys** by enabling the roles on
+your key, or issue a key with full roles. A wrong key reads differently: it
+returns a JSON body containing `Api key not valid`, while a missing role returns
+the bare text `Unauthorized`.
+
+Agency-level keys are a separate limit. They authenticate on
+`hyros_get_user_info` but return `401` on every data endpoint, and the API has no
+way to scope a request to a client account. Use a key from the client account
+itself.
 
 ### How it works (the short version)
 
@@ -134,10 +162,13 @@ confirm Hyros is listed and connected.
 
 ### Local install
 
-**"401 Unauthorized"** — Your API key is wrong or missing. Make sure:
+**"401 Unauthorized"** — Your API key is wrong, missing, or lacks the role the
+endpoint needs. Make sure:
 1. `HYROS_API_KEY` is inside the `env` block
 2. The key is copied exactly from Hyros → Settings → Integrations → API
 3. You restarted Claude Desktop after saving the config
+4. The key has the role that tool needs, if only some tools fail — see
+   [If a tool answers "Unauthorized"](#if-a-tool-answers-unauthorized)
 
 **MCP tools not showing up** — Restart Claude Desktop. The config is only read at startup.
 
@@ -152,7 +183,7 @@ confirm Hyros is listed and connected.
 
 ## Tools
 
-### Read Operations (16)
+### Read Operations (22)
 
 | Tool | Description |
 |---|---|
@@ -163,7 +194,8 @@ confirm Hyros is listed and connected.
 | `hyros_get_calls` | Query call records |
 | `hyros_get_subscriptions` | Query subscriptions |
 | `hyros_get_clicks` | Get click history for a lead |
-| `hyros_get_tags` | List all tags |
+| `hyros_get_tags` | List all tags (deprecated, use `hyros_get_tags_count`) |
+| `hyros_get_tags_count` | List tags with lead counts, paginated |
 | `hyros_get_stages` | List funnel stages |
 | `hyros_get_domains` | List verified domains |
 | `hyros_get_sources` | Get ad sources and campaigns |
@@ -172,8 +204,13 @@ confirm Hyros is listed and connected.
 | `hyros_get_tracking_script` | Get tracking script HTML |
 | `hyros_get_attribution_report` | Attribution metrics (ROAS, ROI, CPA, etc.) |
 | `hyros_get_ad_account_report` | Account-level attribution metrics |
+| `hyros_get_ad_accounts` | List connected ad accounts and their ids |
+| `hyros_get_products` | List catalog products with price and cost of goods |
+| `hyros_get_custom_costs` | List custom costs active in a date window |
+| `hyros_get_carts` | List carts, filterable to abandoned ones |
+| `hyros_get_webhook_subscriptions` | List configured webhook subscriptions |
 
-### Write Operations (17)
+### Write Operations (26)
 
 | Tool | Description |
 |---|---|
@@ -194,6 +231,15 @@ confirm Hyros is listed and connected.
 | `hyros_create_cart` | Track a shopping cart |
 | `hyros_update_cart` | Update pending cart |
 | `hyros_create_click` | Manually record a click |
+| `hyros_delete_lead` | Erase a lead and its PII (GDPR / CCPA) |
+| `hyros_update_product` | Update price, SKU, cost of goods, category |
+| `hyros_delete_product` | Delete a product |
+| `hyros_update_custom_cost` | Replace a custom cost |
+| `hyros_delete_custom_cost` | Delete a custom cost |
+| `hyros_update_source` | Rename or reclassify an ad source |
+| `hyros_delete_source` | Delete an ad source |
+| `hyros_create_webhook_subscription` | Subscribe an endpoint to Hyros events |
+| `hyros_delete_webhook_subscription` | Delete a webhook subscription |
 
 ### Smart Analytics (5)
 
@@ -232,6 +278,10 @@ Once connected, you can ask things like:
 - "What's my current MRR?"
 - "Which campaigns have the highest ROAS?"
 - "Create a lead with email test@example.com and tag them as VIP"
+- "Which leads were updated since yesterday?"
+- "Show me carts abandoned in the last week"
+- "Remove the trial tag from john@example.com"
+- "Which custom costs are still running with no end date?"
 
 ## Security
 

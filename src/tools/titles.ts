@@ -21,6 +21,12 @@ export const TOOL_TITLES: Record<string, string> = {
   hyros_get_tracking_script: 'Get Tracking Script',
   hyros_get_attribution_report: 'Attribution Report',
   hyros_get_ad_account_report: 'Ad Account Report',
+  hyros_get_tags_count: 'Tag Counts',
+  hyros_get_ad_accounts: 'List Ad Accounts',
+  hyros_get_products: 'Get Products',
+  hyros_get_custom_costs: 'Get Custom Costs',
+  hyros_get_carts: 'Get Carts',
+  hyros_get_webhook_subscriptions: 'Webhook Subscriptions',
   hyros_best_performers: 'Best Performers',
   hyros_compare_periods: 'Compare Periods',
   hyros_daily_summary: 'Daily Summary',
@@ -45,6 +51,15 @@ export const TOOL_TITLES: Record<string, string> = {
   hyros_create_cart: 'Create Cart',
   hyros_update_cart: 'Update Cart',
   hyros_create_click: 'Create Click',
+  hyros_delete_lead: 'Delete Lead',
+  hyros_update_product: 'Update Product',
+  hyros_delete_product: 'Delete Product',
+  hyros_update_custom_cost: 'Update Custom Cost',
+  hyros_delete_custom_cost: 'Delete Custom Cost',
+  hyros_update_source: 'Update Ad Source',
+  hyros_delete_source: 'Delete Ad Source',
+  hyros_create_webhook_subscription: 'Create Webhook Subscription',
+  hyros_delete_webhook_subscription: 'Delete Webhook Subscription',
 };
 
 /**

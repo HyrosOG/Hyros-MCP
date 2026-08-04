@@ -19,7 +19,7 @@ export const readTools: Tool[] = [
   },
   {
     name: 'hyros_get_leads',
-    description: 'Search and retrieve leads from Hyros. Filter by email, ID, or date range. Use this to find customers, check their tags, and see when they joined.',
+    description: 'Search and retrieve leads from Hyros. Filter by email, phone, tag, stage, join date, or last-updated date. Use this to find customers, check their tags and current funnel stage, and sync changes into another system.',
     annotations: {
       readOnlyHint: true,
     },
@@ -34,13 +34,33 @@ export const readTools: Tool[] = [
           type: 'string',
           description: 'Comma-separated emails or email prefixes to search (max 50)',
         },
+        phones: {
+          type: 'string',
+          description: 'Comma-separated phone numbers (max 50). Matches on trailing digits, so formatting and country codes are tolerated. Finds leads that also have an email.',
+        },
+        tags: {
+          type: 'string',
+          description: 'Comma-separated tag names (max 50). Returns leads matching ANY of them. Tags must include their prefix, e.g. @california or !florida.',
+        },
+        stage: {
+          type: 'string',
+          description: 'Comma-separated stage names (max 50). Returns leads whose current stage matches ANY of them.',
+        },
         fromDate: {
           type: 'string',
-          description: 'Start date in ISO 8601 format (e.g. 2024-01-01T00:00:00-05:00)',
+          description: 'Start of the JOIN date range, ISO 8601 (e.g. 2024-01-01T00:00:00-05:00)',
         },
         toDate: {
           type: 'string',
-          description: 'End date in ISO 8601 format (e.g. 2024-01-31T23:59:59-05:00)',
+          description: 'End of the JOIN date range, ISO 8601 (e.g. 2024-01-31T23:59:59-05:00)',
+        },
+        updatedFromDate: {
+          type: 'string',
+          description: 'Only leads modified on or after this date, ISO 8601. Use this for incremental sync: fromDate/toDate only see the join date and miss re-tagged or re-staged leads.',
+        },
+        updatedToDate: {
+          type: 'string',
+          description: 'Only leads modified on or before this date, ISO 8601',
         },
         pageSize: {
           type: 'number',
@@ -57,7 +77,7 @@ export const readTools: Tool[] = [
   },
   {
     name: 'hyros_get_lead_journey',
-    description: 'Get the complete customer journey for one or more leads, including all sales, calls, carts, and ad attribution sources. Use this to understand what ads drove a customer to convert.',
+    description: 'Get the complete customer journey for one or more leads: sales, calls, carts, subscriptions, linked leads, and ad attribution sources. Use this to understand what ads drove a customer to convert. Accepts emails directly, so no lookup round-trip is needed.',
     annotations: {
       readOnlyHint: true,
     },
@@ -66,10 +86,18 @@ export const readTools: Tool[] = [
       properties: {
         ids: {
           type: 'string',
-          description: 'Comma-separated lead IDs (required). Get lead IDs from hyros_get_leads first.',
+          description: 'Comma-separated lead IDs. Provide either ids or emails.',
+        },
+        emails: {
+          type: 'string',
+          description: 'Comma-separated emails. Provide either ids or emails.',
+        },
+        includeEvents: {
+          type: 'boolean',
+          description: 'Also return the chronological journey event list (default false)',
         },
       },
-      required: ['ids'],
+      required: [],
       additionalProperties: false,
     },
   },
@@ -274,7 +302,7 @@ export const readTools: Tool[] = [
   },
   {
     name: 'hyros_get_tags',
-    description: 'Get all available tags in your Hyros account. Tags starting with $ are product tags, @ are source tags, ! are action tags.',
+    description: 'Get all available tags in your Hyros account as a flat list. Tags starting with $ are product tags, @ are source tags, ! are action tags. Deprecated by Hyros in favour of hyros_get_tags_count, which adds lead counts and pagination.',
     annotations: {
       readOnlyHint: true,
     },
@@ -593,6 +621,181 @@ export const readTools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'hyros_get_tags_count',
+    description: 'List tags along with how many leads carry each one. Use this instead of hyros_get_tags when you need sizes, pagination, or to look up one tag.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Look up a single tag by its exact name, prefix included (e.g. @california). Partial names return nothing.',
+        },
+        pageSize: {
+          type: 'number',
+          description: 'Results per page (1-250)',
+        },
+        pageId: {
+          type: 'string',
+          description: 'Pagination page ID',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_get_ad_accounts',
+    description: 'List the ad accounts connected to Hyros with their id, name, and platform. Call this first to discover the ids that hyros_get_ad_account_report and hyros_get_attribution_report need.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ids: {
+          type: 'string',
+          description: 'Comma-separated ad account ids to filter by (max 50). Omit to list every connected account.',
+        },
+        fields: {
+          type: 'string',
+          description: 'Comma-separated fields to include per result (e.g. id,name). Omit for all fields.',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_get_products',
+    description: 'List products in the Hyros catalog with price, cost of goods, and category. Use this before creating a product to avoid duplicates, or to audit the pricing that feeds profit and ROAS reporting.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ids: {
+          type: 'string',
+          description: 'Comma-separated product ids (max 50)',
+        },
+        name: {
+          type: 'string',
+          description: 'Filter by product name',
+        },
+        tags: {
+          type: 'string',
+          description: 'Comma-separated product tags (the $-prefixed ones)',
+        },
+        category: {
+          type: 'string',
+          description: 'Filter by category',
+        },
+        pageSize: {
+          type: 'number',
+          description: 'Results per page (1-250)',
+        },
+        pageId: {
+          type: 'string',
+          description: 'Pagination page ID',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_get_custom_costs',
+    description: 'List custom costs (agency fees, tool subscriptions, offline spend) active in a date window. Use this to audit costs that skew profit and ROAS, especially recurring ones left without an end date.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ids: {
+          type: 'string',
+          description: 'Comma-separated custom cost ids (max 50)',
+        },
+        fromDate: {
+          type: 'string',
+          description: 'Only costs active on or after this date, ISO 8601. The window filters on when the cost applies, not when it was created.',
+        },
+        toDate: {
+          type: 'string',
+          description: 'Only costs active on or before this date, ISO 8601',
+        },
+        pageSize: {
+          type: 'number',
+          description: 'Results per page (1-250, default 50)',
+        },
+        pageId: {
+          type: 'string',
+          description: 'Pagination page ID',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_get_carts',
+    description: 'List shopping carts filtered by purchase status, lead, or date. Set purchased=false to find abandoned carts for a recovery campaign.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        emails: {
+          type: 'string',
+          description: 'Comma-separated emails (max 50)',
+        },
+        leadIds: {
+          type: 'string',
+          description: 'Comma-separated lead IDs (max 50)',
+        },
+        purchased: {
+          type: 'boolean',
+          description: 'true returns carts that converted to an order, false returns abandoned carts. Omit for both.',
+        },
+        fromDate: {
+          type: 'string',
+          description: 'Start date, ISO 8601',
+        },
+        toDate: {
+          type: 'string',
+          description: 'End date, ISO 8601',
+        },
+        pageSize: {
+          type: 'number',
+          description: 'Results per page (1-250)',
+        },
+        pageId: {
+          type: 'string',
+          description: 'Pagination page ID',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_get_webhook_subscriptions',
+    description: 'List the webhook subscriptions configured on the account, with their target URL, subscribed events, and delivery state. Use this to audit which systems receive Hyros events.',
+    annotations: {
+      readOnlyHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    },
+  },
 ];
 
 type ReadHandler = (args: Record<string, unknown>, client: HyrosClient) => Promise<unknown>;
@@ -603,10 +806,22 @@ const readHandlers: Record<string, ReadHandler> = {
   hyros_get_leads: (args, client) => client.getLeads({
     ids: optString(args, 'ids'),
     emails: optString(args, 'emails'),
+    phones: optString(args, 'phones'),
+    tags: optString(args, 'tags'),
+    stage: optString(args, 'stage'),
+    updatedFromDate: optString(args, 'updatedFromDate'),
+    updatedToDate: optString(args, 'updatedToDate'),
     ...extractListParams(args),
   }),
 
-  hyros_get_lead_journey: (args, client) => client.getLeadJourney(requireString(args, 'ids')),
+  hyros_get_lead_journey: (args, client) => {
+    const ids = optString(args, 'ids');
+    const emails = optString(args, 'emails');
+    if (!ids && !emails) {
+      throw new Error('Provide either ids or emails');
+    }
+    return client.getLeadJourney({ ids, emails, includeEvents: optBoolean(args, 'includeEvents') });
+  },
 
   hyros_get_sales: (args, client) => client.getSales({
     ids: optString(args, 'ids'),
@@ -704,6 +919,38 @@ const readHandlers: Record<string, ReadHandler> = {
     newCustomerConfiguration: optString(args, 'newCustomerConfiguration'),
     ...extractPagination(args),
   }),
+
+  hyros_get_tags_count: (args, client) => client.getTagsCount({
+    name: optString(args, 'name'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_ad_accounts: (args, client) => client.getAdAccounts({
+    ids: optString(args, 'ids'),
+    fields: optString(args, 'fields'),
+  }),
+
+  hyros_get_products: (args, client) => client.getProducts({
+    ids: optString(args, 'ids'),
+    name: optString(args, 'name'),
+    tags: optString(args, 'tags'),
+    category: optString(args, 'category'),
+    ...extractPagination(args),
+  }),
+
+  hyros_get_custom_costs: (args, client) => client.getCustomCosts({
+    ids: optString(args, 'ids'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_carts: (args, client) => client.getCarts({
+    emails: optString(args, 'emails'),
+    leadIds: optString(args, 'leadIds'),
+    purchased: optBoolean(args, 'purchased'),
+    ...extractListParams(args),
+  }),
+
+  hyros_get_webhook_subscriptions: (_args, client) => client.getWebhookSubscriptions(),
 };
 
 export async function handleReadTool(name: string, args: Record<string, unknown>, client: HyrosClient): Promise<unknown> {

@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { HyrosClient } from '../client.js';
-import type { CartItem } from '../types.js';
+import type { CartItem, CustomCostFrequency, WebhookEventType } from '../types.js';
 import { requireString, requireNumber, requireArray, requireStringArray, optString, optNumber, optBoolean, optArray, optStringArray, requireEmailOrPhone } from '../validation.js';
 
 export const writeTools: Tool[] = [
@@ -91,7 +91,12 @@ export const writeTools: Tool[] = [
         tags: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Tags to apply to the lead',
+          description: 'Tags to ADD to the lead. Existing tags are kept.',
+        },
+        removeTags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Tags to REMOVE from the lead. Use this to undo a tag, including one that wrongly triggered a sale via product-tag matching.',
         },
         leadIps: {
           type: 'array',
@@ -742,6 +747,201 @@ export const writeTools: Tool[] = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'hyros_delete_lead',
+    description: 'Permanently erase a lead and its personal data, found by email or id. Use this for GDPR or CCPA right-to-erasure requests. Cannot be undone.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        email: { type: 'string', description: 'Email of the lead to delete. Provide either email or id.' },
+        id: { type: 'string', description: 'ID of the lead to delete. Provide either email or id.' },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_update_product',
+    description: 'Update a product\'s price, SKU, cost of goods, or category. Cost of goods feeds profit and ROAS reporting, so correcting it changes historical margins.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Product ID (from hyros_get_products)' },
+        name: { type: 'string', description: 'New product name' },
+        price: { type: 'number', description: 'New price' },
+        sku: { type: 'string', description: 'New SKU' },
+        costOfGoods: { type: 'number', description: 'Cost of goods, used for profit and ROAS' },
+        category: { type: 'string', description: 'New category' },
+        recurring: { type: 'boolean', description: 'Whether the product is recurring' },
+      },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_delete_product',
+    description: 'Delete a product from the Hyros catalog. Use this to remove one created by mistake or by a duplicate import.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Product ID (from hyros_get_products)' },
+      },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_update_custom_cost',
+    description: 'Update a custom cost. The whole cost is replaced, so send every field, not only the ones changing. Use this to fix a wrong amount or to close an open-ended recurring cost by setting endDate.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Custom cost ID (from hyros_get_custom_costs)' },
+        cost: { type: 'number', description: 'Cost amount' },
+        frequency: {
+          type: 'string',
+          enum: ['ONE_TIME', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'],
+          description: 'How often the cost applies',
+        },
+        startDate: { type: 'string', description: 'Start date, ISO 8601 (e.g. 2026-08-01T00:00)' },
+        endDate: { type: 'string', description: 'End date, ISO 8601. Leave unset for an open-ended recurring cost.' },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Tags the cost is attributed to. Each must already exist in the account, otherwise the API rejects the request.',
+        },
+        name: { type: 'string', description: 'Cost name' },
+      },
+      required: ['id', 'cost', 'frequency', 'startDate', 'tags'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_delete_custom_cost',
+    description: 'Delete a custom cost. Use this to stop a mistaken or open-ended recurring cost from skewing profit and ROAS on every report.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Custom cost ID (from hyros_get_custom_costs)' },
+      },
+      required: ['id'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_update_source',
+    description: 'Update an ad source: rename it, change its category, goal or traffic source, or toggle its organic and disregarded flags. Sources are addressed by tag, not by id.',
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tag: { type: 'string', description: 'Source tag, including the @ prefix (e.g. @california)' },
+        name: { type: 'string', description: 'New source name' },
+        category: { type: 'string', description: 'New category' },
+        goal: { type: 'string', description: 'New goal' },
+        trafficSource: { type: 'string', description: 'New traffic source' },
+        isDisregard: { type: 'boolean', description: 'Exclude this source from attribution' },
+        isOrganic: { type: 'boolean', description: 'Mark the source as organic' },
+      },
+      required: ['tag'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_delete_source',
+    description: 'Delete an ad source by its tag. Use this to clean up sources created by mistake that clutter every attribution pull. Setting isDisregard via hyros_update_source is the reversible alternative.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tag: { type: 'string', description: 'Source tag, including the @ prefix' },
+      },
+      required: ['tag'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_create_webhook_subscription',
+    description: 'Subscribe an endpoint to Hyros events. Returns a secretKey used to verify the X-Hyros-Signature header on delivered payloads; the key is shown only once, so surface it to the user immediately.',
+    annotations: {
+      readOnlyHint: false,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Subscription name' },
+        targetUrl: { type: 'string', description: 'HTTPS URL that will receive the event POSTs' },
+        eventTypes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: [
+              'sale.attributed',
+              'sale.refunded',
+              'lead.opted.in',
+              'lead.origin.assigned',
+              'lead.stage.changed',
+              'lead.tag.added',
+              'lead.tag.removed',
+              'call.attributed',
+              'subscription.created',
+              'subscription.status.changed',
+            ],
+          },
+          description: 'Events to subscribe to',
+        },
+      },
+      required: ['name', 'targetUrl', 'eventTypes'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'hyros_delete_webhook_subscription',
+    description: 'Delete a webhook subscription by its externalId. Deliveries stop immediately and the secretKey is not recoverable afterwards.',
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+    },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        externalId: { type: 'string', description: 'Subscription externalId (from hyros_get_webhook_subscriptions)' },
+      },
+      required: ['externalId'],
+      additionalProperties: false,
+    },
+  },
 ];
 
 type WriteHandler = (args: Record<string, unknown>, client: HyrosClient) => Promise<unknown>;
@@ -780,6 +980,7 @@ const writeHandlers: Record<string, WriteHandler> = {
         firstName: optString(args, 'firstName'),
         lastName: optString(args, 'lastName'),
         tags: optStringArray(args, 'tags'),
+        removeTags: optStringArray(args, 'removeTags'),
         leadIps: optStringArray(args, 'leadIps'),
         phoneNumbers: optStringArray(args, 'phoneNumbers'),
         adOptimizationConsent: optString(args, 'adOptimizationConsent') as 'GRANTED' | 'DENIED' | 'UNSPECIFIED' | undefined,
@@ -964,6 +1165,61 @@ const writeHandlers: Record<string, WriteHandler> = {
       date: optString(args, 'date'),
     });
   },
+
+  hyros_delete_lead: async (args, client) => {
+    const email = optString(args, 'email');
+    const id = optString(args, 'id');
+    if (!email && !id) {
+      throw new Error('Provide either email or id');
+    }
+    return client.deleteLead({ email, id });
+  },
+
+  hyros_update_product: async (args, client) =>
+    client.updateProduct(requireString(args, 'id'), {
+      name: optString(args, 'name'),
+      price: optNumber(args, 'price'),
+      sku: optString(args, 'sku'),
+      costOfGoods: optNumber(args, 'costOfGoods'),
+      category: optString(args, 'category'),
+      recurring: optBoolean(args, 'recurring'),
+    }),
+
+  hyros_delete_product: async (args, client) => client.deleteProduct(requireString(args, 'id')),
+
+  hyros_update_custom_cost: async (args, client) =>
+    client.updateCustomCost(requireString(args, 'id'), {
+      cost: requireNumber(args, 'cost'),
+      frequency: requireString(args, 'frequency') as CustomCostFrequency,
+      startDate: requireString(args, 'startDate'),
+      tags: requireStringArray(args, 'tags'),
+      endDate: optString(args, 'endDate'),
+      name: optString(args, 'name'),
+    }),
+
+  hyros_delete_custom_cost: async (args, client) => client.deleteCustomCost(requireString(args, 'id')),
+
+  hyros_update_source: async (args, client) =>
+    client.updateSource(requireString(args, 'tag'), {
+      name: optString(args, 'name'),
+      category: optString(args, 'category'),
+      goal: optString(args, 'goal'),
+      trafficSource: optString(args, 'trafficSource'),
+      isDisregard: optBoolean(args, 'isDisregard'),
+      isOrganic: optBoolean(args, 'isOrganic'),
+    }),
+
+  hyros_delete_source: async (args, client) => client.deleteSource(requireString(args, 'tag')),
+
+  hyros_create_webhook_subscription: async (args, client) =>
+    client.createWebhookSubscription({
+      name: requireString(args, 'name'),
+      targetUrl: requireString(args, 'targetUrl'),
+      eventTypes: requireStringArray(args, 'eventTypes') as WebhookEventType[],
+    }),
+
+  hyros_delete_webhook_subscription: async (args, client) =>
+    client.deleteWebhookSubscription(requireString(args, 'externalId')),
 };
 
 export async function handleWriteTool(name: string, args: Record<string, unknown>, client: HyrosClient): Promise<unknown> {

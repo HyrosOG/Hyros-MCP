@@ -239,8 +239,8 @@ Format with clear sections and use tables where helpful.`,
                   text: `Please investigate everything about the lead with ${identifier} in my Hyros account.
 
 Steps:
-1. Use hyros_get_leads to find the lead${email ? ` (search by email: "${email}")` : leadId ? ` (search by id: "${leadId}")` : ''}
-2. Once you have their lead ID, use hyros_get_lead_journey to get their complete journey
+1. Use hyros_get_lead_journey directly${email ? ` (emails: "${email}")` : leadId ? ` (ids: "${leadId}")` : ''} — it accepts emails, so no lookup round-trip is needed
+2. Use hyros_get_leads for the lead's tags, current stage, and consent state
 3. Use hyros_get_clicks to see their click history
 
 Then provide a complete profile:

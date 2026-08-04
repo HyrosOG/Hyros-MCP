@@ -69,8 +69,8 @@ describe('Read handler coverage', () => {
     }
   });
 
-  it('readTools count is exactly 16', () => {
-    assert.equal(readTools.length, 16);
+  it('readTools count is exactly 22', () => {
+    assert.equal(readTools.length, 22);
   });
 });
 
@@ -109,7 +109,16 @@ describe('Write handler coverage', () => {
   });
 
   it('destructive write tools have destructiveHint: true AND readOnlyHint: false', () => {
-    const destructiveNames = ['hyros_refund_order', 'hyros_delete_sale', 'hyros_delete_call'];
+    const destructiveNames = [
+      'hyros_refund_order',
+      'hyros_delete_sale',
+      'hyros_delete_call',
+      'hyros_delete_lead',
+      'hyros_delete_product',
+      'hyros_delete_custom_cost',
+      'hyros_delete_source',
+      'hyros_delete_webhook_subscription',
+    ];
     for (const name of destructiveNames) {
       const tool = writeTools.find((t) => t.name === name);
       assert.ok(tool, `expected to find write tool "${name}"`);
@@ -127,7 +136,16 @@ describe('Write handler coverage', () => {
   });
 
   it('non-destructive write tools have readOnlyHint: false', () => {
-    const destructiveNames = new Set(['hyros_refund_order', 'hyros_delete_sale', 'hyros_delete_call']);
+    const destructiveNames = new Set([
+      'hyros_refund_order',
+      'hyros_delete_sale',
+      'hyros_delete_call',
+      'hyros_delete_lead',
+      'hyros_delete_product',
+      'hyros_delete_custom_cost',
+      'hyros_delete_source',
+      'hyros_delete_webhook_subscription',
+    ]);
     for (const tool of writeTools) {
       if (destructiveNames.has(tool.name)) continue;
       assert.equal(
@@ -138,8 +156,8 @@ describe('Write handler coverage', () => {
     }
   });
 
-  it('writeTools count is exactly 17', () => {
-    assert.equal(writeTools.length, 17);
+  it('writeTools count is exactly 26', () => {
+    assert.equal(writeTools.length, 26);
   });
 });
 
@@ -190,8 +208,8 @@ describe('Compound handler coverage', () => {
 describe('Total tool registration', () => {
   const allTools = [...readTools, ...writeTools, ...compoundTools];
 
-  it('total tool count across all three modules equals 38', () => {
-    assert.equal(allTools.length, 38);
+  it('total tool count across all three modules equals 53', () => {
+    assert.equal(allTools.length, 53);
   });
 
   it('no duplicate tool names across all modules', () => {
@@ -221,10 +239,29 @@ describe('Total tool registration', () => {
 // ---------------------------------------------------------------------------
 
 describe('Input validation in handlers', () => {
-  it('hyros_get_lead_journey throws without ids', async () => {
+  it('hyros_get_lead_journey throws without ids or emails', async () => {
     await assert.rejects(
       () => handleReadTool('hyros_get_lead_journey', {}, mockClient),
-      /Missing or invalid required parameter: ids/,
+      /Provide either ids or emails/,
+    );
+  });
+
+  it('hyros_get_lead_journey forwards emails without requiring ids', async () => {
+    let received: unknown;
+    const recorder = new Proxy({} as any, {
+      get: () => async (arg: unknown) => {
+        received = arg;
+        return { result: [] };
+      },
+    });
+    await handleReadTool('hyros_get_lead_journey', { emails: 'a@b.com', includeEvents: true }, recorder);
+    assert.deepEqual(received, { ids: undefined, emails: 'a@b.com', includeEvents: true });
+  });
+
+  it('hyros_delete_lead throws without email or id', async () => {
+    await assert.rejects(
+      () => handleWriteTool('hyros_delete_lead', {}, mockClient),
+      /Provide either email or id/,
     );
   });
 
